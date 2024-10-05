@@ -10,22 +10,21 @@ class CommandType(Enum):
     REPLACE_STRING = "replace_string"
 
 
-def output_error_message(message: str) -> None:
+def exit_and_output_error(message: str) -> None:
     sys.stderr.write(f"Error: {message}\n")
+    sys.exit(1)
 
 
 def get_valid_command_type() -> CommandType:
     if len(sys.argv) < 2:
-        output_error_message("Please specify command type")
-
-        raise ValueError
+        exit_and_output_error("Please specify command type")
 
     try:
         return CommandType(sys.argv[1])
     except ValueError:
         command_types = ", ".join([command.value for command in CommandType])
 
-        output_error_message(f"Please specify one of the commands [{command_types}]")
+        exit_and_output_error(f"Please specify one of the commands [{command_types}]")
 
 
 def check_if_exists_file(*file_paths: str):
@@ -33,9 +32,7 @@ def check_if_exists_file(*file_paths: str):
         if os.path.isfile(file_path):
             return
 
-        output_error_message(f"Invalid file path: {file_path}")
-
-        raise ValueError
+        exit_and_output_error(f"Invalid file path: {file_path}")
 
 
 def cast_to_positive_number(value: str, arg_name: str) -> int:
@@ -47,9 +44,7 @@ def cast_to_positive_number(value: str, arg_name: str) -> int:
 
         raise ValueError
     except ValueError:
-        output_error_message(f"{arg_name} must be a positive number")
-
-        raise ValueError
+        exit_and_output_error(f"{arg_name} must be a positive number")
 
 
 def exec_command(command_type: CommandType, args: list[str]) -> None:
@@ -66,9 +61,7 @@ def exec_command(command_type: CommandType, args: list[str]) -> None:
 
 def check_args_count(args: list[str], expect_count: int) -> None:
     if len(args) < expect_count:
-        output_error_message("Missing argument")
-
-        raise ValueError
+        exit_and_output_error("Missing argument")
 
 
 def reverse(args: list[str]) -> None:
@@ -127,14 +120,11 @@ def replace_string(args: list[str]) -> None:
 
 
 def main() -> None:
-    try:
-        command_type = get_valid_command_type()
+    command_type = get_valid_command_type()
 
-        exec_command(command_type, sys.argv[2::])
+    exec_command(command_type, sys.argv[2::])
 
-        sys.exit(0)
-    except ValueError:
-        sys.exit(1)
+    sys.exit(0)
 
 
 if __name__ == "__main__":
