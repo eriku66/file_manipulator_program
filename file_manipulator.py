@@ -10,7 +10,7 @@ class CommandType(Enum):
     REPLACE_STRING = "replace_string"
 
 
-def get_valid_command_type():
+def get_valid_command_type() -> CommandType:
     try:
         return CommandType(sys.argv[1])
     except ValueError:
@@ -29,16 +29,16 @@ def check_if_exists_file(*file_paths: str):
         raise ValueError
 
 
-def cast_to_number(value: str, arg_name: str) -> int:
+def cast_to_positive_number(value: str, arg_name: str) -> int:
     try:
         return int(value)
     except ValueError:
-        sys.stderr.write(f"{arg_name} must be a natural number")
+        sys.stderr.write(f"{arg_name} must be a positive number")
 
         raise ValueError
 
 
-def exec_command(command_type: CommandType, args: list[str]):
+def exec_command(command_type: CommandType, args: list[str]) -> None:
     match command_type:
         case CommandType.REVERSE:
             reverse(args)
@@ -50,7 +50,7 @@ def exec_command(command_type: CommandType, args: list[str]):
             replace_string(args)
 
 
-def reverse(args: list[str]):
+def reverse(args: list[str]) -> None:
     input_path = args[0]
 
     check_if_exists_file(input_path)
@@ -64,7 +64,7 @@ def reverse(args: list[str]):
         f.write(contents[::-1])
 
 
-def copy(args: list[str]):
+def copy(args: list[str]) -> None:
     input_path = args[0]
 
     check_if_exists_file(input_path)
@@ -78,18 +78,18 @@ def copy(args: list[str]):
         f.write(contents)
 
 
-def duplicate_contents(args: list[str]):
+def duplicate_contents(args: list[str]) -> None:
     input_path = args[0]
 
     check_if_exists_file(input_path)
 
-    n = cast_to_number(args[1], arg_name="n")
+    n = cast_to_positive_number(args[1], arg_name="n")
 
     with open(input_path, "r+") as f:
         f.write(f.read() * n)
 
 
-def replace_string(args: list[str]):
+def replace_string(args: list[str]) -> None:
     input_path = args[0]
 
     check_if_exists_file(input_path)
@@ -104,7 +104,7 @@ def replace_string(args: list[str]):
         f.write(contents.replace(needle, new_string))
 
 
-def main():
+def main() -> None:
     try:
         command_type = get_valid_command_type()
 
