@@ -10,13 +10,22 @@ class CommandType(Enum):
     REPLACE_STRING = "replace_string"
 
 
+def output_error_message(message: str) -> None:
+    sys.stderr.write(f"Error: {message}\n")
+
+
 def get_valid_command_type() -> CommandType:
+    if len(sys.argv) < 2:
+        output_error_message("Please specify command type")
+
+        raise ValueError
+
     try:
         return CommandType(sys.argv[1])
     except ValueError:
         command_types = ", ".join([command.value for command in CommandType])
 
-        sys.stderr.write(f"Please specify one of the commands [{command_types}]")
+        output_error_message(f"Please specify one of the commands [{command_types}]")
 
 
 def check_if_exists_file(*file_paths: str):
@@ -24,16 +33,21 @@ def check_if_exists_file(*file_paths: str):
         if os.path.isfile(file_path):
             return
 
-        sys.stderr.write(f"Invalid file path: {file_path}")
+        output_error_message(f"Invalid file path: {file_path}")
 
         raise ValueError
 
 
 def cast_to_positive_number(value: str, arg_name: str) -> int:
     try:
-        return int(value)
+        int_value = int(value)
+
+        if int_value > 0:
+            return int_value
+
+        raise ValueError
     except ValueError:
-        sys.stderr.write(f"{arg_name} must be a positive number")
+        output_error_message(f"{arg_name} must be a positive number")
 
         raise ValueError
 
@@ -50,12 +64,19 @@ def exec_command(command_type: CommandType, args: list[str]) -> None:
             replace_string(args)
 
 
+def check_args_count(args: list[str], expect_count: int) -> None:
+    if len(args) < expect_count:
+        output_error_message("Missing argument")
+
+        raise ValueError
+
+
 def reverse(args: list[str]) -> None:
-    input_path = args[0]
+    check_args_count(args, 2)
+
+    input_path, output_path = args
 
     check_if_exists_file(input_path)
-
-    output_path = args[1]
 
     with open(input_path, "r") as f:
         contents = f.read()
@@ -65,11 +86,11 @@ def reverse(args: list[str]) -> None:
 
 
 def copy(args: list[str]) -> None:
-    input_path = args[0]
+    check_args_count(args, 2)
+
+    input_path, output_path = args
 
     check_if_exists_file(input_path)
-
-    output_path = args[1]
 
     with open(input_path, "r") as f:
         contents = f.read()
@@ -79,23 +100,24 @@ def copy(args: list[str]) -> None:
 
 
 def duplicate_contents(args: list[str]) -> None:
-    input_path = args[0]
+    check_args_count(args, 2)
+
+    input_path, str_n = args
 
     check_if_exists_file(input_path)
 
-    n = cast_to_positive_number(args[1], arg_name="n")
+    n = cast_to_positive_number(str_n, arg_name="n")
 
     with open(input_path, "r+") as f:
         f.write(f.read() * n)
 
 
 def replace_string(args: list[str]) -> None:
-    input_path = args[0]
+    check_args_count(args, 3)
+
+    input_path, needle, new_string = args
 
     check_if_exists_file(input_path)
-
-    needle = args[1]
-    new_string = args[2]
 
     with open(input_path, "r") as f:
         contents = f.read()
